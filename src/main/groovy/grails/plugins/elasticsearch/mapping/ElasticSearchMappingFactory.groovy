@@ -66,15 +66,18 @@ class ElasticSearchMappingFactory {
     }
 
     private static Map<String, Object> getMappingProperties(SearchableClassMapping scm) {
+        log.debug ("scm is : " + scm?.indexName + " " + scm?.getDomainClass() + " " + scm?.getPropertiesMapping())
         Map<String, Object> elasticTypeMappingProperties = [:]
 
         // Map each domain properties in supported format, or object for complex type
         scm.getPropertiesMapping().each { SearchableClassPropertyMapping scpm ->
+            log.debug("SCPM = " + scpm + " " + scpm.getGrailsProperty())
             // Does it have custom mapping?
             Map<String, Object> propOptions = [:]
             // Add the custom mapping (searchable static property in domain model)
             propOptions.putAll(scpm.getAttributes())
             String propType = getElasticType(scpm)
+            log.debug("propType = " + propType + " " + scpm.getPropertyName() + " " + scpm.getGrailsProperty())
             if (!scpm.isGeoPoint()) {
                 if (scpm.isComponent()) {
                     // Proceed with nested mapping.
@@ -90,6 +93,7 @@ class ElasticSearchMappingFactory {
                     propOptions.putAll((Map<String, Object>)
                             (elasticMapping.values().iterator().next()))
                 }
+                log.debug("1 propType = " + propType + " " + scpm.getPropertyName() + " " + scpm.getGrailsProperty())
 
                 // Once it is an object, we need to add id & class mappings, otherwise
                 // ES will fail with NullPointer.
@@ -115,7 +119,11 @@ class ElasticSearchMappingFactory {
                     props.put('class', defaultDescriptor('keyword', 'no', true))
                     props.put('ref', defaultDescriptor('keyword', 'no', true))
                 }
+                log.debug("2 propType = " + propType + " " + scpm.getPropertyName() + " " + scpm.getGrailsProperty())
+
             }
+            log.debug("3 propType = " + propType + " " + scpm.getPropertyName() + " " + scpm.getGrailsProperty())
+
             propOptions.type = propType
             // See http://www.elasticsearch.com/docs/elasticsearch/mapping/all_field/
             if (!(propType in ['object', 'attachment']) && scm.isAll()) {
@@ -135,7 +143,7 @@ class ElasticSearchMappingFactory {
                 untouched.put('type', propOptions.get('type') == 'text' ? 'keyword' : propOptions.get('type'))
 
                 Map fields = [untouched: untouched]
-                fields.put("${scpm.getPropertyName()}" as String, field)
+                fields.put(scpm.getPropertyName(), field as LinkedHashMap<Object, Object>)
 
                 propOptions = [:]
                 propOptions.type = propType
@@ -147,7 +155,13 @@ class ElasticSearchMappingFactory {
             if (propType == 'text' && scpm.fieldDataEnabled){
                 propOptions.fielddata = true
             }
-            elasticTypeMappingProperties.put(scpm.getPropertyName(), propOptions)
+            log.debug("4 propType = " + propType + " " + scpm.getPropertyName() + " " + scpm.getGrailsProperty())
+
+            if(scpm.getPropertyName()) {
+                elasticTypeMappingProperties.put(scpm.getPropertyName(), propOptions)
+            } else {
+                log.error("Mapping has no name. Ingoring")
+            }
         }
         elasticTypeMappingProperties
     }
@@ -162,6 +176,10 @@ class ElasticSearchMappingFactory {
         } else {
             DomainProperty property = scpm.grailsProperty
 
+            if(!property || !property.typePropertyName) {
+                log.error("property for mapping is null")
+                return null
+            }
             propType = property.typePropertyName
 
             //Preprocess collections and arrays to work with it's element types

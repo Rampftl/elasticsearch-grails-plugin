@@ -175,9 +175,9 @@ class SearchableClassPropertyMapping {
     /**
      * @return searchable property mapping information.
      */
-    String toString() {
+    /*String toString() {
         "${getClass().name}(propertyName:$propertyName, propertyType:$propertyType, mappingAttributes:$mappingAttributes, specialMappingAttributes:$specialMappingAttributes)"
-    }
+    }*/
 
     private Class<?> getPropertyType() {
         grailsProperty.type
