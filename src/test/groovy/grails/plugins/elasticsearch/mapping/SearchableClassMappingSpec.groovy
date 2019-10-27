@@ -4,7 +4,7 @@ import grails.core.GrailsDomainClass
 import grails.plugins.elasticsearch.util.IndexNamingUtils
 import grails.testing.gorm.DataTest
 import grails.testing.spring.AutowiredTest
-import org.grails.datastore.gorm.config.GrailsDomainClassMappingContext
+//import org.grails.datastore.gorm.config.GrailsDomainClassMappingContext
 import spock.lang.Specification
 import test.Photo
 import test.upperCase.UpperCase
@@ -12,7 +12,7 @@ import test.upperCase.UpperCase
 class SearchableClassMappingSpec extends Specification implements DataTest, AutowiredTest {
 
     Closure doWithSpring() {{ ->
-        mappingContext GrailsDomainClassMappingContext
+        //mappingContext grailsApplication.mappingContext
         domainReflectionService DomainReflectionService
     }}
 
