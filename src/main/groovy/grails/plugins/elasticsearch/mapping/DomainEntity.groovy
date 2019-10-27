@@ -1,11 +1,11 @@
 package grails.plugins.elasticsearch.mapping
 
 import grails.core.GrailsDomainClass
-import grails.core.GrailsDomainClassProperty
 import grails.util.GrailsClassUtils
 import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
-import org.grails.core.util.ClassPropertyFetcher
+import org.grails.datastore.mapping.model.PersistentProperty
+import org.grails.datastore.mapping.reflect.ClassPropertyFetcher
 import org.grails.datastore.mapping.model.PersistentEntity
 
 import static java.util.Collections.emptyList
@@ -62,19 +62,19 @@ class DomainEntity {
     }
 
     boolean isRoot() {
-        grailsDomainClass?.root ?: false
+        persistentEntity?.root ?: false
     }
 
     DomainProperty getIdentifier() {
-        getPropertyAdapter(grailsDomainClass?.identifier)
+        getPropertyAdapter(persistentEntity?.getIdentity())
     }
 
     String getIdentifierName() {
-        grailsDomainClass?.identifier?.name
+        persistentEntity?.getIdentity()?.name
     }
 
     String getDefaultPropertyName() {
-        grailsDomainClass?.propertyName
+        grailsDomainClass?.name
     }
 
     String getPropertyNameRepresentation() {
@@ -86,7 +86,7 @@ class DomainEntity {
     }
 
     DomainProperty getPropertyByName(String name) {
-        getPropertyAdapter(grailsDomainClass?.getPropertyByName(name))
+        getPropertyAdapter(persistentEntity?.getPropertyByName(name))
     }
 
     Collection<DomainProperty> getProperties() {
@@ -94,14 +94,14 @@ class DomainEntity {
     }
 
     Collection<DomainProperty> getAllProperties() {
-        def properties = grailsDomainClass?.properties?.toList()
+        def properties = persistentEntity?.persistentProperties?.toList()
         if (!properties) return emptyList()
 
         properties.collect { getPropertyAdapter(it) }
     }
 
     Collection<DomainProperty> getPersistentProperties() {
-        def properties = grailsDomainClass?.persistentProperties?.toList()
+        def properties = persistentEntity?.persistentProperties?.toList()
         if (!properties) return emptyList()
 
         properties.collect { getPropertyAdapter(it) }
@@ -121,7 +121,7 @@ class DomainEntity {
 
     Map<String, Class<?>> getAssociationMap() {
         if (!_associationMap) {
-            _associationMap = getMergedConfigurationMap(type, GrailsDomainClassProperty.HAS_MANY)
+            _associationMap = getMergedConfigurationMap(type, 'hasMany')
 
             getProperties().each {
                 if (reflectionService.isDomainEntity(it.type)) {
@@ -164,7 +164,7 @@ class DomainEntity {
         ClassPropertyFetcher.forClass(clazz).getStaticPropertyValue(propertyName, propertyClass)
     }
 
-    private DomainProperty getPropertyAdapter(GrailsDomainClassProperty property) {
+    private DomainProperty getPropertyAdapter(PersistentProperty property) {
         if (!property) return null
 
         propertyCache.computeIfAbsent(property.name) {

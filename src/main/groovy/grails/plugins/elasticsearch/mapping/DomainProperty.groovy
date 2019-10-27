@@ -1,7 +1,8 @@
 package grails.plugins.elasticsearch.mapping
 
-import grails.core.GrailsDomainClassProperty
+//import grails.core.GrailsDomainClassProperty
 import groovy.transform.CompileStatic
+import org.grails.datastore.mapping.model.PersistentProperty
 
 @CompileStatic
 class DomainProperty {
@@ -9,11 +10,11 @@ class DomainProperty {
     private final DomainReflectionService reflectionService
 
     private final DomainEntity owningEntity
-    private final GrailsDomainClassProperty delegate
+    private final PersistentProperty delegate
 
     DomainProperty(DomainReflectionService reflectionService,
                    DomainEntity owningEntity,
-                   GrailsDomainClassProperty propertyDelegate)
+                   PersistentProperty propertyDelegate)
     {
         this.reflectionService = reflectionService
         this.owningEntity = owningEntity
@@ -21,7 +22,8 @@ class DomainProperty {
     }
 
     boolean isPersistent() {
-        delegate.persistent
+        //delegate.persistent
+        true
     }
 
     DomainEntity getDomainEntity() {
@@ -53,7 +55,7 @@ class DomainProperty {
     }
 
     String getTypePropertyName() {
-        delegate.typePropertyName
+        delegate.getType().name
     }
 
     @Override

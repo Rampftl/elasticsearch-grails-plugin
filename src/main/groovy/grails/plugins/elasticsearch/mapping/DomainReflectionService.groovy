@@ -31,8 +31,7 @@ class DomainReflectionService {
 
         entityCache.computeIfAbsent(clazz) {
             def artefact = getDomainClassArtefact(clazz)
-
-            PersistentEntity persistentEntity = mappingContext.getPersistentEntity(clazz.canonicalName)
+            PersistentEntity persistentEntity = grailsApplication.mappingContext.getPersistentEntity(clazz.canonicalName)
 
             artefact ? new DomainEntity(this, artefact, persistentEntity) : null
         }
