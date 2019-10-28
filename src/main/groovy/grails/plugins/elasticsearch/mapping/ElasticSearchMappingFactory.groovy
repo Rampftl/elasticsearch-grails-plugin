@@ -111,10 +111,12 @@ class ElasticSearchMappingFactory {
                         idType = treatValueAsAString(idType)
                     } else if (idTypeIsUUID(idType)) {
                         idType = 'text'
+                    } else {
+                        def splitType = idType.split("\\.")
+                        idType = splitType.last().toLowerCase()
                     }
 
                     if(idType == 'text') idType = 'keyword'
-
                     props.put('id', defaultDescriptor(idType, 'not_analyzed', true))
                     props.put('class', defaultDescriptor('keyword', 'no', true))
                     props.put('ref', defaultDescriptor('keyword', 'no', true))
@@ -143,7 +145,7 @@ class ElasticSearchMappingFactory {
                 untouched.put('type', propOptions.get('type') == 'text' ? 'keyword' : propOptions.get('type'))
 
                 Map fields = [untouched: untouched]
-                fields.put(scpm.getPropertyName(), field as LinkedHashMap<Object, Object>)
+                fields.put("${scpm.getPropertyName()}", field as LinkedHashMap<Object, Object>)
 
                 propOptions = [:]
                 propOptions.type = propType
@@ -167,6 +169,7 @@ class ElasticSearchMappingFactory {
     }
 
     private static String getElasticType(SearchableClassPropertyMapping scpm) {
+        log.debug("getElasticType for " + scpm)
         String propType
 
         if (scpm.isGeoPoint()) {
@@ -181,6 +184,8 @@ class ElasticSearchMappingFactory {
                 return null
             }
             propType = property.typePropertyName
+
+            log.debug("propType 1 = " + propType)
 
             //Preprocess collections and arrays to work with it's element types
             Class referencedPropertyType = property.referencedPropertyType
@@ -201,7 +206,7 @@ class ElasticSearchMappingFactory {
             } else if (!SUPPORTED_FORMAT.contains(propType) && SUPPORTED_FORMAT.contains(getTypeSimpleName(referencedPropertyType, scpm))) {
                 propType = getTypeSimpleName(referencedPropertyType, scpm)
             }
-
+            log.debug("propType 2 = " + propType)
             //Handle unsupported types
             if (!(SUPPORTED_FORMAT.contains(propType))) {
                 if (isDateType(referencedPropertyType)) {
@@ -234,7 +239,9 @@ class ElasticSearchMappingFactory {
                     propType = 'object'
                 }
             }
+            log.debug("propType 3 = " + propType)
         }
+        log.debug("propType 4 = " + propType)
 
         propType
     }
